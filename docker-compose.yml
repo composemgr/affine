@@ -1,7 +1,7 @@
 services:
  affine:
    image: ghcr.io/toeverything/affine-graphql:latest
-   container_name: affine-graphql
+   container_name: toeverything-affine-graphql-latest
    command:
      ['sh', '-c', 'node ./scripts/self-host-predeploy && node ./dist/index.js']
    ports:
@@ -30,8 +30,8 @@ services:
      - AFFINE_ADMIN_PASSWORD=${AFFINE_ADMIN_PASSWORD} # <-- you can fill in a password, but it's optional
      - TELEMETRY_ENABLE=false
  redis:
-   image: redis
-   container_name: affine_redis
+   image: redis:latest
+   container_name: toeverything-affine-redis-latest
    restart: unless-stopped
    volumes:
      - "/var/lib/srv/$USER/docker/toeverything/affine/latest/rootfs/data/db/redis:/data"
@@ -41,8 +41,8 @@ services:
      timeout: 5s
      retries: 5
  postgres:
-   image: postgres
-   container_name: affine_postgres
+   image: postgres:latest
+   container_name: toeverything-affine-postgres-latest
    restart: unless-stopped
    volumes:
      - "/var/lib/srv/$USER/docker/toeverything/affine/latest/rootfs/data/db/postgres:/var/lib/postgresql/data"
