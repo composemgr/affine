@@ -1,22 +1,20 @@
 services:
  affine:
-   image: ghcr.io/toeverything/affine-graphql:stable
-   container_name: affine_selfhosted
+   image: ghcr.io/toeverything/affine-graphql:latest
+   container_name: affine-graphql
    command:
      ['sh', '-c', 'node ./scripts/self-host-predeploy && node ./dist/index.js']
    ports:
-     - '3010:3010' # <-- change the left side if your host already uses 3010
-     - '5555:5555' # <-- change the left side if your host already uses 5555
+     - '3010:3010'     # <-- change the left side if your host already uses 3010
+     - '5555:5555'     # <-- change the left side if your host already uses 5555
    depends_on:
      redis:
        condition: service_healthy
      postgres:
        condition: service_healthy
    volumes:
-     # custom configurations
-     - ./.affine/self-host/config:/root/.affine/config
-     # blob storage
-     - ./.affine/self-host/storage:/root/.affine/storage
+     - "/var/lib/srv/$USER/docker/toeverything/affine/latest/rootfs/config:/root/.affine/config"
+     - "/var/lib/srv/$USER/docker/toeverything/affine/latest/rootfs/data/affine:/root/.affine/storage"
    logging:
      driver: 'json-file'
      options:
@@ -26,19 +24,17 @@ services:
      - NODE_OPTIONS="--import=./scripts/register.js"
      - AFFINE_CONFIG_PATH=/root/.affine/config
      - REDIS_SERVER_HOST=redis
-     - DATABASE_URL=postgres://affine:<arandomsetofcharactersandnumb3rs>@postgres:5432/affine  # change the password here, then copy it and paste it in the postgres section below for POSTGRES_PASSWORD
-    - NODE_ENV=production
-     - AFFINE_ADMIN_EMAIL=${AFFINE_ADMIN_EMAIL} # <-- you can fill in an email here, but it's optional
+     - DATABASE_URL=postgres://affine:h6oAV3gF0aZUPtR@postgres:5432/affine  # change the password here, then copy it and paste it in the postgres section below for POSTGRES_PASSWORD
+     - NODE_ENV=production
+     - AFFINE_ADMIN_EMAIL=${AFFINE_ADMIN_EMAIL}       # <-- you can fill in an email here, but it's optional
      - AFFINE_ADMIN_PASSWORD=${AFFINE_ADMIN_PASSWORD} # <-- you can fill in a password, but it's optional
-     # Telemetry allows us to collect data on how you use the affine. This data will helps us improve the app and provide better features.
-     # Uncomment next line if you wish to quit telemetry.
      - TELEMETRY_ENABLE=false
  redis:
    image: redis
    container_name: affine_redis
    restart: unless-stopped
    volumes:
-     - ./.affine/self-host/redis:/data
+     - "/var/lib/srv/$USER/docker/toeverything/affine/latest/rootfs/data/db/redis:/data"
    healthcheck:
      test: ['CMD', 'redis-cli', '--raw', 'incr', 'ping']
      interval: 10s
@@ -49,7 +45,7 @@ services:
    container_name: affine_postgres
    restart: unless-stopped
    volumes:
-     - ./.affine/self-host/postgres:/var/lib/postgresql/data
+     - "/var/lib/srv/$USER/docker/toeverything/affine/latest/rootfs/data/db/postgres:/var/lib/postgresql/data"
    healthcheck:
      test: ['CMD-SHELL', 'pg_isready -U affine']
      interval: 10s
@@ -57,7 +53,7 @@ services:
      retries: 5
    environment:
      POSTGRES_USER: affine
-     POSTGRES_PASSWORD: <arandomsetofcharactersandnumb3rs> # paste the same password from above here.
+     POSTGRES_PASSWORD: h6oAV3gF0aZUPtR # paste the same password from above here.
      POSTGRES_DB: affine
      PGDATA: /var/lib/postgresql/data/pgdata
 
