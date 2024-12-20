@@ -1,0 +1,65 @@
+services:
+  affine:
+    image: ghcr.io/toeverything/affine-graphql:latest
+    container_name: toeverything-affine-graphql-latest
+    hostname: affine
+    restart: always
+    pull_policy: always
+    command:
+      ['sh', '-c', 'node ./scripts/self-host-predeploy && node ./dist/index.js']
+    environment:
+      - REDIS_SERVER_HOST=redis
+      - NODE_OPTIONS="--import=./scripts/register.js"
+      - AFFINE_CONFIG_PATH=/root/.affine/config
+      - DATABASE_URL=postgres://affine:h6oAV3gF0aZUPtR@postgres:5432/affine
+      - AFFINE_ADMIN_EMAIL=${AFFINE_ADMIN_EMAIL:-admin@$HOSTNAME}
+      - AFFINE_ADMIN_PASSWORD=${AFFINE_ADMIN_PASSWORD:-password}
+      - TELEMETRY_ENABLE=false
+      - NODE_ENV=production
+    ports:
+      - '172.17.0.1:3010:3010'
+      - '172.17.0.1:5555:5555'
+    volumes:
+      - /var/lib/srv/$USER/docker/toeverything/affine/latest/rootfs/data/affine:/root/.affine/storage
+      - /var/lib/srv/$USER/docker/toeverything/affine/latest/rootfs/config/affine:/root/.affine/config
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+
+  redis:
+    image: redis:latest
+    container_name: toeverything-affine-redis-latest
+    restart: always
+    pull_policy: always
+    volumes:
+      - /var/lib/srv/$USER/docker/toeverything/affine/latest/rootfs/data/db/redis:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', '--raw', 'incr', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres:
+    image: postgres:latest
+    container_name: toeverything-affine-postgres-latest
+    restart: always
+    pull_policy: always
+    environment:
+      POSTGRES_USER: affine
+      POSTGRES_PASSWORD: h6oAV3gF0aZUPtR
+      POSTGRES_DB: affine
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - /var/lib/srv/$USER/docker/toeverything/affine/latest/rootfs/data/db/postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U affine']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  affine:
+    name: affine
+    external: false
