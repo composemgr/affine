@@ -1,0 +1,84 @@
+# nginx proxy address - http://172.17.0.1:61012
+
+name: affine
+x-logging: &default-logging
+  options:
+    max-size: '5m'
+    max-file: '1'
+  driver: json-file
+
+services:
+  app:
+    image: ghcr.io/toeverything/affine-graphql:latest
+    container_name: affine-app
+    hostname: affine
+    restart: always
+    pull_policy: always
+    command: ['sh', '-c', 'node ./scripts/self-host-predeploy && node ./dist/index.js']
+    logging: *default-logging
+    environment:
+      - PORT=80
+      - NODE_ENV=production
+      - REDIS_SERVER_HOST=redis
+      - NODE_OPTIONS="--import=./scripts/register.js"
+      - AFFINE_CONFIG_PATH=/root/.affine/config
+      - DATABASE_URL=postgres://affine:h6oAV3gF0aZUPtR@db:5432/affine
+      - AFFINE_SERVER_EXTERNAL_URL=${BASE_HOST_NAME:-$HOSTNAME}
+      - AFFINE_ADMIN_PASSWORD=${AFFINE_ADMIN_PASSWORD:-password}
+      - AFFINE_ADMIN_EMAIL=${AFFINE_ADMIN_EMAIL:-admin@$HOSTNAME}
+      - TELEMETRY_ENABLE=false
+    ports:
+      - '172.17.0.1:61012:80'
+      - '172.17.0.1:5555:5555'
+    volumes:
+      - /var/lib/srv/$USER/docker/toeverything/affine/latest/rootfs/data/affine:/root/.affine/storage
+      - /var/lib/srv/$USER/docker/toeverything/affine/latest/rootfs/config/affine:/root/.affine/config
+    depends_on:
+      redis:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+    networks:
+      - affine
+
+  redis:
+    image: redis:latest
+    container_name: affine-redis
+    restart: always
+    pull_policy: always
+    logging: *default-logging
+    volumes:
+      - /var/lib/srv/$USER/docker/db/redis/affine:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', '--raw', 'incr', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - affine
+
+  db:
+    image: postgres:latest
+    container_name: affine-db
+    restart: always
+    pull_policy: always
+    logging: *default-logging
+    environment:
+      POSTGRES_USER: affine
+      POSTGRES_PASSWORD: h6oAV3gF0aZUPtR
+      POSTGRES_DB: affine
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - /var/lib/srv/$USER/docker/db/postgres/affine:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U affine']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - affine
+
+networks:
+  affine:
+    name: affine
+    external: false
