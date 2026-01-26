@@ -1,38 +1,37 @@
 ## 👋 Welcome to affine 🚀
 
-AFFiNE - Open-source alternative to Notion & Miro with local-first approach
+Privacy-first, open-source workspace and knowledge base
 
 ## 📋 Description
 
-AFFiNE is an open-source workspace combining docs, whiteboard, and databases. Write, draw, and plan all at once with a privacy-focused, local-first approach. Perfect alternative to Notion and Miro with real-time collaboration, AI features, and self-hosting capabilities.
+Privacy-first, open-source workspace and knowledge base
 
 ## 🚀 Services
 
-- **app**: AFFiNE GraphQL server (`ghcr.io/toeverything/affine-graphql:latest`)
-- **redis**: Redis cache for sessions and background jobs
-- **db**: PostgreSQL database for data storage
+- **app**: ghcr.io/toeverything/affine-graphql:latest
 
 ### Infrastructure Components
 
-- **Database**: PostgreSQL for persistent storage
-- **Cache/Queue**: Redis for caching and real-time features
+- **redis**: Redis database
+- **db**: Postgres database
+
 
 ## 📦 Installation
 
-### Using curl
-```shell
-curl -q -LSsf "https://raw.githubusercontent.com/composemgr/affine/main/docker-compose.yaml" | docker compose -f - up -d
+### Option 1: Quick Install
+```bash
+curl -q -LSsf "https://raw.githubusercontent.com/composemgr/affine/main/docker-compose.yaml" -o compose.yml
 ```
 
-### Using git
-```shell
+### Option 2: Git Clone
+```bash
 git clone "https://github.com/composemgr/affine" ~/.local/srv/docker/affine
 cd ~/.local/srv/docker/affine
 docker compose up -d
 ```
 
-### Using composemgr
-```shell
+### Option 3: Using composemgr
+```bash
 composemgr install affine
 ```
 
@@ -41,77 +40,62 @@ composemgr install affine
 ### Environment Variables
 
 ```shell
-# Core Settings
 TZ=America/New_York
-BASE_HOST_NAME=${HOSTNAME}
-BASE_DOMAIN_NAME=
-PORT=80
-
-# Admin Account
 APP_ADMIN_USER=admin
 APP_ADMIN_PASS=changeme_admin_password
-
-# Database Settings
 DB_USER_NAME=affine
-DB_USER_PASS=changeme_db_password
-DB_CREATE_DATABASE_NAME=affine
-
-# Application Settings
-AFFINE_SERVER_EXTERNAL_URL=https://${BASE_HOST_NAME}
-TELEMETRY_ENABLE=false
-NODE_ENV=production
 ```
+
+See `docker-compose.yaml` for complete list of configurable options.
 
 ## 🌐 Access
 
 - **Web Interface**: http://172.17.0.1:61012
-- **Admin Panel**: http://172.17.0.1:5555
-- **Default Credentials**: admin@${BASE_DOMAIN_NAME} / changeme_admin_password
 
 ## 📂 Volumes
 
-- `./rootfs/data/affine` - Application storage
-- `./rootfs/config/affine` - Configuration files  
-- `./rootfs/db/postgres/affine` - PostgreSQL data
-- `./rootfs/db/redis/affine` - Redis data
+- `./rootfs/data/affine` - Data storage
+- `./rootfs/config/affine` - Data storage
+- `./rootfs/data/db/redis/affine` - Data storage
+- `./rootfs/data/db/postgres/affine` - Data storage
 
 ## 🔐 Security
 
-- Change default admin password immediately after first login
-- All secrets use `changeme_*` prefix
-- Telemetry disabled by default
-- Database credentials isolated per deployment
+- Change all default passwords before deploying to production
+- Use strong secrets for all authentication tokens
+- Configure HTTPS using a reverse proxy (nginx, traefik, caddy)
+- Regularly update Docker images for security patches
+- Backup your data regularly
 
 ## 🔍 Logging
 
 ```shell
 docker compose logs -f app
-docker compose logs -f db
-docker compose logs -f redis
 ```
 
 ## 🛠️ Management
 
-```shell
-# Start
+```bash
+# Start services
 docker compose up -d
 
-# Stop
+# Stop services
 docker compose down
 
-# Update
+# Update to latest images
 docker compose pull && docker compose up -d
 
-# Backup database
-docker compose exec db pg_dump -U affine affine > backup.sql
+# View logs
+docker compose logs -f
+
+# Restart services
+docker compose restart
 ```
 
 ## 📋 Requirements
 
 - Docker Engine 20.10+
 - Docker Compose V2+
-- 2GB+ RAM recommended
-- Reverse proxy for production
 
 ## 🤝 Author
 
