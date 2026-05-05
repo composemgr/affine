@@ -54,10 +54,10 @@ See `docker-compose.yaml` for complete list of configurable options.
 
 ## 📂 Volumes
 
-- `./rootfs/data/affine` - Data storage
-- `./rootfs/config/affine` - Data storage
-- `./rootfs/data/db/redis/affine` - Data storage
-- `./rootfs/data/db/postgres/affine` - Data storage
+- `./volumes/data/affine` - Data storage
+- `./volumes/config/affine` - Data storage
+- `./volumes/data/db/redis/affine` - Data storage
+- `./volumes/data/db/postgres/affine` - Data storage
 
 ## 🔐 Security
 
