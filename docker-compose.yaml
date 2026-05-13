@@ -19,6 +19,8 @@ services:
     logging: *default-logging
     environment:
       TZ: ${TZ:-America/New_York}
+      CONTAINER_NAME: affine-app
+      HOSTNAME: ${BASE_HOST_NAME:-$HOSTNAME}
       PORT: 80
       NODE_ENV: production
       NODE_OPTIONS: --import=./scripts/register.js
@@ -41,8 +43,26 @@ services:
         condition: service_healthy
       db:
         condition: service_healthy
+    labels:
+      - 'traefik.enable=true'
+      - 'cloudflare.enable=true'
+      - 'traefik.docker.network=proxy'
+      - 'cloudflare.service=http://affine-app:80'
+      - 'cloudflare.hostname=affine.${CLOUDFLARE_ZONE_NAME:-}'
+      - 'traefik.http.routers.affine-app.entrypoints=http'
+      - 'traefik.http.routers.affine-app-secure.tls=true'
+      - 'traefik.http.routers.affine-app.rule=Host($(${BASE_HOST_NAME:-$HOSTNAME}))'
+      - 'traefik.http.middlewares.affine-app-https-redirect.redirectscheme.scheme=https'
+      - 'traefik.http.routers.affine-app.middlewares=affine-app-https-redirect'
+      - 'traefik.http.routers.affine-app-secure.entrypoints=https'
+      - 'traefik.http.routers.affine-app-secure.rule=Host($(${BASE_HOST_NAME:-$HOSTNAME}))'
+      - 'traefik.http.routers.affine-app-secure.tls.certresolver=cloudflare'
+      - 'traefik.http.routers.affine-app-secure.service=affine-app'
+      - 'traefik.http.services.affine-app.loadbalancer.server.port=80'
     networks:
       - affine
+      - proxy
+      - cloudflare
 
   redis:
     image: redis:alpine
@@ -52,6 +72,7 @@ services:
     logging: *default-logging
     environment:
       TZ: ${TZ:-America/New_York}
+      CONTAINER_NAME: affine-redis
     volumes:
       - './volumes/data/db/redis/affine:/data'
     healthcheck:
@@ -70,6 +91,7 @@ services:
     logging: *default-logging
     environment:
       TZ: ${TZ:-America/New_York}
+      CONTAINER_NAME: affine-db
       POSTGRES_USER: ${DB_USER_NAME:-affine}
       POSTGRES_PASSWORD: ${DB_USER_PASS:-changeme_db_password}
       POSTGRES_DB: ${DB_CREATE_DATABASE_NAME:-affine}
@@ -88,3 +110,7 @@ networks:
   affine:
     name: affine
     external: false
+  proxy:
+    external: true
+  cloudflare:
+    external: true
