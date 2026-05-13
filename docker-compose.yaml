@@ -21,7 +21,7 @@ services:
       TZ: ${TZ:-America/New_York}
       CONTAINER_NAME: affine-app
       HOSTNAME: ${BASE_HOST_NAME:-$HOSTNAME}
-      PORT: 80
+      PORT: 3010
       NODE_ENV: production
       NODE_OPTIONS: --import=./scripts/register.js
       AFFINE_CONFIG_PATH: /root/.affine/config
@@ -33,7 +33,7 @@ services:
       REDIS_SERVER_PORT: 6379
       TELEMETRY_ENABLE: false
     ports:
-      - '172.17.0.1:61012:80'
+      - '172.17.0.1:61012:3010'
       - '172.17.0.1:5555:5555'
     volumes:
       - './volumes/data/affine:/root/.affine/storage'
@@ -47,7 +47,7 @@ services:
       - 'traefik.enable=true'
       - 'cloudflare.enable=true'
       - 'traefik.docker.network=proxy'
-      - 'cloudflare.service=http://affine-app:80'
+      - 'cloudflare.service=http://affine-app:3010'
       - 'cloudflare.hostname=affine.${CLOUDFLARE_ZONE_NAME:-}'
       - 'traefik.http.routers.affine-app.entrypoints=http'
       - 'traefik.http.routers.affine-app-secure.tls=true'
@@ -58,7 +58,7 @@ services:
       - 'traefik.http.routers.affine-app-secure.rule=Host($(${BASE_HOST_NAME:-$HOSTNAME}))'
       - 'traefik.http.routers.affine-app-secure.tls.certresolver=cloudflare'
       - 'traefik.http.routers.affine-app-secure.service=affine-app'
-      - 'traefik.http.services.affine-app.loadbalancer.server.port=80'
+      - 'traefik.http.services.affine-app.loadbalancer.server.port=3010'
     networks:
       - affine
       - proxy
