@@ -24,7 +24,7 @@ services:
       NODE_OPTIONS: --import=./scripts/register.js
       AFFINE_CONFIG_PATH: /root/.affine/config
       AFFINE_SERVER_EXTERNAL_URL: https://${BASE_HOST_NAME:-$HOSTNAME}
-      AFFINE_ADMIN_EMAIL: ${APP_ADMIN_USER:-admin}@${BASE_DOMAIN_NAME:-${BASE_HOST_NAME}}
+      AFFINE_ADMIN_EMAIL: ${APP_ADMIN_USER:-admin}@${BASE_DOMAIN_NAME:-example.com}
       AFFINE_ADMIN_PASSWORD: ${APP_ADMIN_PASS:-changeme_admin_password}
       DATABASE_URL: postgres://${DB_USER_NAME:-affine}:${DB_USER_PASS:-changeme_db_password}@affine-db:5432/${DB_CREATE_DATABASE_NAME:-affine}
       REDIS_SERVER_HOST: affine-redis
@@ -45,7 +45,7 @@ services:
       - affine
 
   redis:
-    image: redis:latest
+    image: redis:alpine
     container_name: affine-redis
     restart: always
     pull_policy: always
