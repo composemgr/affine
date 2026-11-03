@@ -8,7 +8,7 @@ Privacy-first, open-source workspace and knowledge base
 
 ## 🚀 Services
 
-- **app**: ghcr.io/toeverything/affine-graphql:latest
+- **app**: ghcr.io/toeverything/affine:stable
 
 ### Infrastructure Components
 
